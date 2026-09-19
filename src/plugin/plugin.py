@@ -42,8 +42,12 @@ config.plugins.serviceapp = ConfigSubsection()
 config_serviceapp = config.plugins.serviceapp
 
 config_serviceapp.servicemp3 = ConfigSubsection()
-config_serviceapp.servicemp3.replace = ConfigBoolean(default=False, descriptions={0: _("original"), 1: _("serviceapp")})
-config_serviceapp.servicemp3.replace.value = serviceapp_client.isServiceMP3Replaced()
+
+config_serviceapp.servicemp3.replace = ConfigBoolean(
+    default=False,
+    descriptions={0: _("original"), 1: _("serviceapp")}
+)
+
 config_serviceapp.servicemp3.player = ConfigSelection(default="gstplayer", choices=player_choices)
 config_serviceapp.passthrough_fix_enable = ConfigBoolean(default=False, descriptions={False: _("false"), True: _("true")})
 delay_choices = [(i, ngettext("%d ms", "%d ms", i) % i) for i in list(range(0, 3100, 100))]  # noqa: F821
@@ -293,13 +297,18 @@ class ServiceAppSettings(ConfigListScreen, Screen):
             self.save_settings_and_close()
 
     def save_settings_and_close(self, callback=False):
-        init_serviceapp_settings()
-        if config_serviceapp.servicemp3.replace.value:
-            serviceapp_client.setServiceMP3Replace(True)
-        else:
-            serviceapp_client.setServiceMP3Replace(False)
-        self.saveAll()
-        self.close(callback)
+            init_serviceapp_settings()
+        
+            if config_serviceapp.servicemp3.replace.value:
+                serviceapp_client.setServiceMP3Replace(True)
+            else:
+                serviceapp_client.setServiceMP3Replace(False)
+        
+            config_serviceapp.servicemp3.replace.save()
+            config_serviceapp.servicemp3.player.save()
+        
+            self.saveAll()
+            self.close(callback)
 
 
 class ServiceAppPlayer(MoviePlayer):
